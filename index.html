@@ -365,6 +365,13 @@ function busyUpdate(){
 function busyOn(id){BUSYSET[id]=1;busyUpdate()}
 function busyOff(id){delete BUSYSET[id];busyUpdate()}
 function busyCancel(){BUSYSET={};busyUpdate()}
+// সার্চ শুরুর শর্ত: শুধু সংখ্যা (আইডি) হলে ৬ ডিজিট; অক্ষর+সংখ্যা (CD-1250, D-1250, DT-0099) হলে অন্তত ৪ ডিজিট; অন্য কিছু হলে ৬ অক্ষর
+function okLen(v){
+  var n=norm(v);
+  if(/^[0-9]+$/.test(n))return n.length>=6;
+  if(/^[A-Z]+[0-9]+$/.test(n))return n.replace(/[^0-9]/g,"").length>=4;
+  return n.length>=MIN_LEN;
+}
 var LKSEQ=0,LKC={};
 function apply(src,r){
   if(!r||!r.ok){setStat(r&&r.error==="key"?"গোপন কী (key) মিলছে না":"ডেটাবেসের সাথে সংযোগ হয়নি — ম্যানুয়ালি লিখুন",true);return}
@@ -385,7 +392,7 @@ function apply(src,r){
 function doLookup(src){
   var seq=++LKSEQ,v=$(src).value.trim();
   if(!v){clearAuto(src);return}
-  if(norm(v).length<MIN_LEN)return;   // ৬ অক্ষর (হাইফেন ছাড়া) না হলে সার্চ নয়
+  if(!okLen(v))return;   // কোড/আইডি পুরো না লিখলে সার্চ নয়
   if(!APPS_SCRIPT_URL){setStat(NOURL,true);return}
   var code=$("rcode").value.trim(),rid=$("rid").value.trim(),params={};
   if(src==="rcode"){params.code=code;if(rid&&$("rid").getAttribute("data-auto")!=="1")params.id=rid}
